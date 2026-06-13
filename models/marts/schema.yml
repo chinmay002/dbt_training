@@ -1,0 +1,6 @@
+models:
+ - name: mart_claim
+   description: Claims for business 
+
+ - name: fct_claims
+   description: fct is incremntal

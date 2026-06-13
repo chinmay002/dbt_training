@@ -1,0 +1,44 @@
+version: 2
+
+
+sources:
+  - name: healthcare
+    database: healthcare-dbt #project
+    schema: dev              #dataset
+
+    tables:
+      - name: claims
+
+      - name: diagnoses
+      - name: encounters
+      - name: medications
+      - name: providers
+      - name: patients
+
+
+models:
+  - name: stg_claims
+    columns:
+      - name: claim_id
+        tests:
+          - not_null
+          - unique 
+
+      - name: paid_amount
+        tests:
+          - pos_amt
+
+      - name: billed_amount
+        tests:
+          - pos_amt
+          
+      - name: allowed_amount
+        tests:
+          - pos_amt     
+
+
+      - name: patient_id
+        tests:
+          - relationships:
+              to: ref('stg_patients')
+              field: patient_id
