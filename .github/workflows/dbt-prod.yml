@@ -1,0 +1,75 @@
+name: dbt-prod
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  dbt-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dbt
+        run: |
+          pip install dbt-bigquery
+
+      - name: Create dbt profile
+        run: |
+          mkdir -p ~/.dbt
+
+          echo '${{ secrets.DBT_SERVICE_ACCOUNT }}' > /home/runner/.dbt/service-account.json
+
+          cat > /home/runner/.dbt/profiles.yml << 'EOF'
+          healthcare_analytics:
+            outputs:
+              ci:
+                type: bigquery
+                method: service-account
+                project: healthcare-dbt
+                dataset: analytics_prod
+                threads: 1
+                keyfile: /home/runner/.dbt/service-account.json
+                location: US
+                priority: interactive
+                job_retries: 1
+                job_execution_timeout_seconds: 300
+            target: prod
+          EOF
+
+      - name: Verify files
+        run: |
+          echo "=== DBT DIRECTORY ==="
+          ls -la /home/runner/.dbt
+
+          echo ""
+          echo "=== PROFILES.YML ==="
+          cat /home/runner/.dbt/profiles.yml
+
+      - name: Verify service account exists
+        run: |
+          ls -lh /home/runner/.dbt/service-account.json
+
+      - name: Verify dbt installation
+        run: |
+          dbt --version
+
+      - name: dbt debug
+        run: |
+          dbt debug --profiles-dir /home/runner/.dbt
+
+      - name: dbt deps
+        run: |
+          dbt deps --profiles-dir /home/runner/.dbt
+
+      - name: dbt build
+        run: |
+          dbt build --profiles-dir /home/runner/.dbt
