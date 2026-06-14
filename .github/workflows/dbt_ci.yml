@@ -20,6 +20,29 @@ jobs:
         run: |
           pip install dbt-bigquery
 
-      - name: Verify dbt
+      - name: Create dbt profile
         run: |
-          dbt --version
+          mkdir -p ~/.dbt
+
+          echo '${{ secrets.DBT_SERVICE_ACCOUNT }}' > ~/.dbt/service-account.json
+
+          cat > ~/.dbt/profiles.yml << EOF
+          healthcare_analytics:
+            outputs:
+              ci:
+                type: bigquery
+                method: service-account
+                project: healthcare-dbt
+                dataset: ci
+                threads: 1
+                keyfile: ~/.dbt/service-account.json
+                location: US
+                priority: interactive
+                job_retries: 1
+                job_execution_timeout_seconds: 300
+            target: ci
+          EOF
+
+      - name: dbt debug
+        run: |
+          dbt debug
