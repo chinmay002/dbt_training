@@ -63,3 +63,11 @@ jobs:
       - name: dbt debug
         run: |
           dbt debug --profiles-dir /home/runner/.dbt
+
+            - name: dbt deps
+        run: |
+          dbt deps --profiles-dir /home/runner/.dbt
+
+      - name: dbt build
+        run: |
+          dbt build --profiles-dir /home/runner/.dbt
