@@ -31,7 +31,7 @@ jobs:
           cat > /home/runner/.dbt/profiles.yml << 'EOF'
           healthcare_analytics:
             outputs:
-              ci:
+              prod:
                 type: bigquery
                 method: service-account
                 project: healthcare-dbt
