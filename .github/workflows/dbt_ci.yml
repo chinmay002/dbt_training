@@ -24,9 +24,9 @@ jobs:
         run: |
           mkdir -p ~/.dbt
 
-          echo '${{ secrets.DBT_SERVICE_ACCOUNT }}' > ~/.dbt/service-account.json
+          echo '${{ secrets.DBT_SERVICE_ACCOUNT }}' > /home/runner/.dbt/service-account.json
 
-          cat > ~/.dbt/profiles.yml << EOF
+          cat > /home/runner/.dbt/profiles.yml << 'EOF'
           healthcare_analytics:
             outputs:
               ci:
@@ -35,7 +35,7 @@ jobs:
                 project: healthcare-dbt
                 dataset: ci
                 threads: 1
-                keyfile: ~/.dbt/service-account.json
+                keyfile: /home/runner/.dbt/service-account.json
                 location: US
                 priority: interactive
                 job_retries: 1
@@ -43,6 +43,23 @@ jobs:
             target: ci
           EOF
 
+      - name: Verify files
+        run: |
+          echo "=== DBT DIRECTORY ==="
+          ls -la /home/runner/.dbt
+
+          echo ""
+          echo "=== PROFILES.YML ==="
+          cat /home/runner/.dbt/profiles.yml
+
+      - name: Verify service account exists
+        run: |
+          ls -lh /home/runner/.dbt/service-account.json
+
+      - name: Verify dbt installation
+        run: |
+          dbt --version
+
       - name: dbt debug
         run: |
-          dbt debug
+          dbt debug --profiles-dir /home/runner/.dbt
